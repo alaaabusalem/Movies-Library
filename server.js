@@ -8,10 +8,20 @@ server.use(cors());
 require('dotenv').config();
 const apiKey = process.env.api_key;
 
-const PORT = 3000;
-server.listen(PORT, () => {
- console.log(`running on port ${PORT}`)
+const pg=require('pg');
+const client=new pg.Client('postgresql://localhost:5432/lab15db');
+const PORT = 3002;
+server.use(express.json());
+client.connect()
+.then(()=>{
+    server.listen(PORT, () => {
+        console.log(`running on port ${PORT},Im ready..`)
+       });
 });
+
+
+
+
 function Movie(title, poster_path, overview) {
     this.title = title;
     this.poster_path = poster_path;
@@ -44,7 +54,8 @@ server.get('/trending', TrendyMoviesEveryWeek);
 server.get('/search', SearchForMoviesReleaseIn2000);
 server.get('/ReleasDate', SearchReleasDate);
 server.get('/SimilarMovies', SimilarMovies);
-
+server.post('/addMovie', addMovie);
+server.get('/getMovies', getMovies);
 server.get('/servererror', (req, res) => {
     res.status(500).send("Page Not Found");
 });
@@ -138,7 +149,30 @@ try{
     }
 }
  
+function addMovie(req,res){
+  const movie=req.body;
+  const sql=`INSERT INTO movies (title, release_date, overview)
+  VALUES ($1, $2, $3);`
+  const values=[movie.title,movie.release_date,movie.overview];
+  client.query(sql,values)
+  .then(data=>{
+    res.send('data has been added');
+  })
+  .catch(error=>{
+    errorHandler(error,req,res);
+  })
+}
+function getMovies (req,res){
 
+    const sql=`SELECT * FROM movies;`
+    client.query(sql)
+    .then(data=>{
+        res.send(data);
+      })
+      .catch(error=>{
+        errorHandler(error,req,res);
+      })
+}
 function errorHandler(error,req,res){
     const err={
         errNum:500,
