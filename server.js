@@ -20,11 +20,11 @@ server.get('/favorite',(req,resp)=>{
     });
 
     server.get('/servererror',(req,resp)=>{
-        resp.status(500).send("Page Not Found");
+        resp.status(500).send("Sory,SERVER ERROR");
         });
 
-    let obj2={status: 500,
-        responseText: "Sorry, something went wrong"};
+    let obj2={status: 404,
+        responseText: "page not found error"};
     server.get('*',(req,resp)=>{
         resp.status(404).send(JSON.stringify(obj2));
         });
