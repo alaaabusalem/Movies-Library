@@ -10,7 +10,7 @@ const apiKey = process.env.api_key;
 
 const pg=require('pg');
 const client=new pg.Client('postgresql://localhost:5432/lab15db');
-const PORT = 3002;
+const PORT = 3003;
 server.use(express.json());
 client.connect()
 .then(()=>{
@@ -56,6 +56,9 @@ server.get('/ReleasDate', SearchReleasDate);
 server.get('/SimilarMovies', SimilarMovies);
 server.post('/addMovie', addMovie);
 server.get('/getMovies', getMovies);
+server.put('/updatemovie/:id', updatmovie);
+server.delete('/deletemovie/:id', deletemovie);
+server.get('/getmovie/:id', getmoviebyid);
 server.get('/servererror', (req, res) => {
     res.status(500).send("Page Not Found");
 });
@@ -172,6 +175,47 @@ function getMovies (req,res){
       .catch(error=>{
         errorHandler(error,req,res);
       })
+}
+function updatmovie(req,res){
+    const {id}=req.params;
+    const info=req.body;
+    const sql=`UPDATE movies
+    SET title = $1, release_date = $2, overview=$3
+    WHERE id=${id};`
+    const values=[info.title,info.release_date,info.overview];
+    client.query(sql,values)
+    .then(data=>{
+        res.status(200).send("updated successfully");
+    })
+    .catch(error=>{
+        errorHandler(error,req,res)
+    })
+}
+function deletemovie(req,res){
+    const {id}=req.params;
+   
+    const sql=`DELETE FROM movies WHERE id=${id};`
+
+    client.query(sql)
+    .then(data=>{
+        res.status(200).send("Deleted successfully");
+    })
+    .catch(error=>{
+        errorHandler(error,req,res)
+    })
+}
+function getmoviebyid(req,res){
+    const {id}=req.params;
+    
+    const sql=`SELECT * FROM movies WHERE id=${id};`
+    
+    client.query(sql)
+    .then(data=>{
+        res.status(200).send(data.rows);
+    })
+    .catch(error=>{
+        errorHandler(error,req,res)
+    })
 }
 function errorHandler(error,req,res){
     const err={
