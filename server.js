@@ -7,10 +7,11 @@ const axios = require('axios');
 server.use(cors());
 require('dotenv').config();
 const apiKey = process.env.api_key;
+const db = process.env.db;
 
 const pg=require('pg');
-const client=new pg.Client('postgresql://localhost:5432/lab15db');
-const PORT = 3003;
+const client=new pg.Client(db);
+const PORT = process.env.PORT;
 server.use(express.json());
 client.connect()
 .then(()=>{
